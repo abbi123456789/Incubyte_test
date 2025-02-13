@@ -82,6 +82,17 @@ SET
 	
 -- After Updating i getting same count as original
 
+-- Mapping city and their Respective Region
+UPDATE sales
+SET region = CASE 
+    WHEN city IN ('Ahmedabad', 'Mumbai', 'Pune') THEN 'West'
+    WHEN city IN ('Bangalore', 'Chennai', 'Hyderabad') THEN 'South'
+    WHEN city IN ('Delhi', 'Jaipur', 'Lucknow') THEN 'North'
+    WHEN city = 'Kolkata' THEN 'East'
+    ELSE 'Unknown'
+END;
+
+
 --Total Sales & Average Order Value
 SELECT 
     SUM(TransactionAmount) AS total_sales, 
@@ -95,14 +106,16 @@ Group by Region
 order by total_sales Desc;
 
 --Top 5 sold products
-SELECT ProductName, count(Quantity) AS Quantity_sold 
+SELECT ProductName, sum(Quantity) AS Quantity_sold 
 FROM sales
 GROUP BY ProductName 
 ORDER BY quantity_sold DESC 
-LIMIT 5;
+limit 5;
 
 
--- 
+
+-- Region and city wise drilldown Sales
+
 SELECT  
     region, city,
     SUM(TransactionAmount) AS total_sales,
@@ -110,4 +123,30 @@ SELECT
 FROM sales
 GROUP BY region,city
 ORDER BY region, sales_rank;
+
+-- Top 1 Region wise cities with sale
+with cte1 as (
+SELECT  
+    region, city,
+    SUM(TransactionAmount) AS total_sales,
+    DENSE_RANK() OVER (PARTITION BY region ORDER BY SUM(TransactionAmount) Desc) AS sales_rank
+FROM sales
+GROUP BY region,city
+ORDER BY region, sales_rank)
+select * from cte1
+where sales_rank=1;
+
+-- Bottom 1 Region wise cities with sale
+with cte2 as (
+SELECT  
+    region, city,
+    SUM(TransactionAmount) AS total_sales,
+    DENSE_RANK() OVER (PARTITION BY region ORDER BY SUM(TransactionAmount) Asc) AS sales_rank
+FROM sales
+GROUP BY region,city
+ORDER BY region, sales_rank)
+select * from cte2
+where sales_rank=1;
+
+
 
