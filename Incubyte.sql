@@ -62,7 +62,7 @@ FROM sales;
 UPDATE sales
 SET 
     CustomerID = COALESCE(CustomerID, 0),
-    TransactionDate = COALESCE(TransactionDate, '2000-01-01'),
+    TransactionDate = COALESCE(TransactionDate, '2000-01-01'), -- Assuming 2000-01-01 this one as default instead of Null values
     TransactionAmount = COALESCE(TransactionAmount, 0),
     PaymentMethod = COALESCE(PaymentMethod, 'Unknown'),
     Quantity = COALESCE(Quantity, 0),
@@ -147,6 +147,107 @@ GROUP BY region,city
 ORDER BY region, sales_rank)
 select * from cte2
 where sales_rank=1;
+
+------Time analysis----
+SELECT 
+    MIN(TransactionDate) AS first_transaction, 
+    MAX(TransactionDate) AS last_transaction
+FROM sales;
+
+--Date wise high no of transactions
+SELECT 
+    TransactionDate::Date AS transaction_day, 
+    COUNT(TransactionID) AS No_of_transactions, 
+    SUM(TransactionAmount) AS total_sales
+FROM sales
+GROUP BY transaction_day
+ORDER BY No_of_transactions desc;
+
+--Year,month wise transactions and their sales
+SELECT    
+    EXTRACT(YEAR FROM TransactionDate) AS year,  
+    EXTRACT(MONTH FROM TransactionDate) AS month,  
+    COUNT(TransactionID) AS total_transactions,  
+    SUM(TransactionAmount) AS total_sales  
+FROM sales  
+GROUP BY year, month  
+ORDER BY total_transactions DESC;
+
+--Day wise no of transactions and sales
+select 
+	extract(day from TransactionDate) AS Day,
+	count(TransactionID) as No_of_transactions,
+	SUM(TransactionAmount) AS total_sales  
+from sales
+group by day
+order by No_of_transactions desc;
+
+
+--Discount Impact on total orders and their respective avg sales
+SELECT DiscountPercent, COUNT(*) AS total_orders, 
+       AVG(TransactionAmount) AS avg_sales 
+FROM sales 
+GROUP BY DiscountPercent 
+ORDER BY Total_orders asc;
+
+--Customer information like 
+SELECT CustomerGender,
+	Ceil(AVG(CustomerAge)) AS avg_age,
+	COUNT(*) AS total_customers ,
+	sum(Transactionamount) as total_sales
+FROM sales
+GROUP BY CustomerGender
+order by total_customers desc;
+
+--Delivery days Analysis
+SELECT DeliveryTimeDays, COUNT(*) AS total_orders, 
+       Round(AVG(ShippingCost),2) AS avg_shipping_cost 
+FROM sales
+GROUP BY DeliveryTimeDays 
+ORDER BY total_orders desc;
+
+-----feedback and Loyalcusomer Analysis----
+SELECT 
+    FeedbackScore, 
+    COUNT(TransactionID) AS transaction_count,
+	Round(Avg(TransactionAmount),2) as Avg_amount_spent
+FROM sales
+GROUP BY FeedbackScore
+ORDER BY transaction_count desc;
+
+select avg(LoyaltyPoints), min(LoyaltyPoints), max(LoyaltyPoints) from sales
+
+SELECT 
+    city,
+    COUNT(*) AS total_ReturnCount
+FROM sales
+where Returned='Yes'
+GROUP BY  city
+ORDER BY total_ReturnCount desc;
+
+Select feedbackscore, sum(CASE WHEN Returned = 'Yes' THEN 1 ELSE 0 END) AS total_returns
+from sales
+group by feedbackscore
+order by total_returns desc;
+
+--customer loyalty and their average spent
+SELECT 
+    CASE 
+        WHEN LoyaltyPoints < 1000 THEN 'Low Loyalty (0-999)'
+        WHEN LoyaltyPoints BETWEEN 1000 AND 5000 THEN 'Medium Loyalty (1000-4999)'
+        ELSE 'High Loyalty (5000+)'
+    END AS loyalty_category, 
+    Round(AVG(TransactionAmount),2) AS avg_spend_per_transaction
+FROM sales
+GROUP BY loyalty_category
+ORDER BY avg_spend_per_transaction DESC;
+
+
+
+
+
+
+
 
 
 
