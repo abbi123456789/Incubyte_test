@@ -1,12 +1,12 @@
 **Sales Data Analysis**   
 
-📌 **Project Overview**  
+# 📌 **Project Overview**  
 This project explores sales transaction data using SQL in PostgreSQL. It provides key insights into total sales, regional sales trends, customer behavior, and delivery performance and more. 
 
-📜 SQL Queries Used:  
+# 📜 SQL Queries Used:  
 All SQL queries are available in the **incubyte.sql file**.  
 
-**Key Insights & Analysis**  
+# **Key Insights & Analysis**  
 
 1. firstly I observed City and Region Mismatching. Corrected it by Updating Region Column with their respective city.
 2. Find All Insights& Observations in **Key_Observations&Insights.pdf file. **
